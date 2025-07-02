@@ -78,6 +78,25 @@ router.post("/login", async (req, res) => {
   }
 });
 
+//refresh token (POST)
+router.post("/refresh", (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    return res.status(401).json({ message: "No refresh token" });
+  }
+  jwt.verify(refreshToken, REFRESH_KEY, async (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+    const user = await User.findByPk(decoded.id);
+    if (!user) {
+      return res.status(403).json({ message: "User not found" });
+    }
+    const { accessToken } = generateTokens(decoded);
+    res.send({ id: user.id, role: user.role, token: accessToken });
+  });
+});
+
 //Get all users (GET)
 router.get("/", authenticate, async (req, res) => {
   const { role } = req.user;
