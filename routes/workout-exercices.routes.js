@@ -22,10 +22,11 @@ router.get("/:id", authenticate, async (req, res) => {
 });
 
 //Add exercice (POST)
-router.post("/", authenticate, async (req, res) => {
+router.post("/:id", authenticate, async (req, res) => {
   checkUser(req, res, "trainer,user", "You're not allowed to exercise");
   try {
-    const { exercice_name, workout_id } = req.body;
+    const workout_id = req.params.id;
+    const exercice_name = req.body;
     const workout = await Workout.findOne({ where: { id: workout_id } });
     if (!workout) {
       return res.status(404).json({ message: "Please create a workout first" });
@@ -42,11 +43,10 @@ router.post("/", authenticate, async (req, res) => {
 });
 
 //Edit exercise name (PUT)
-router.put("/:id", authenticate, async (req, res) => {
+router.put("/", authenticate, async (req, res) => {
   checkUser(req, res, "trainer,user", "You're not allowed to exercise");
   try {
-    const id = req.params.id;
-    const { exercise_name } = req.body;
+    const { exercise_name, id } = req.body;
     const [update] = await WorkoutExercises.update(
       {
         exercice_name: exercise_name,
@@ -65,10 +65,10 @@ router.put("/:id", authenticate, async (req, res) => {
 });
 
 //Remove exercise (delete)
-router.delete("/:id", authenticate, async (req, res) => {
+router.delete("/", authenticate, async (req, res) => {
   checkUser(req, res, "trainer,user", "You're not allowed to exercise");
   try {
-    const id = req.params.id;
+    const id = req.body;
     const isDeleted = await WorkoutExercises.destroy({ where: { id } });
     if (!isDeleted) {
       return res.status(400).json({ message: "Exercise not deleted" });

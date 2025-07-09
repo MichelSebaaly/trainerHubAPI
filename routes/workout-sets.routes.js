@@ -78,9 +78,9 @@ router.put("/:id", authenticate, async (req, res) => {
 });
 
 //Remove a set (DELETE)
-router.delete("/:id", authenticate, async (req, res) => {
+router.delete("/", authenticate, async (req, res) => {
   checkUser(req, res, "trainer,user", "You're not allowed to exercise");
-  const setId = req.params.id;
+  const setId = req.body;
   try {
     const deleted = await WorkoutSets.destroy({ where: { id: setId } });
     if (!deleted) {

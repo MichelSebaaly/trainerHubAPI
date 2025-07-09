@@ -9,8 +9,6 @@ const router = express.Router();
 
 //Add a program (POST)
 router.post("/", authenticate, upload.single("file"), async (req, res) => {
-  console.log(req.body);
-  console.log(req.file);
   const { role } = req.user;
   const file_url = req.file.filename;
   if (role !== "trainer") {
@@ -19,7 +17,6 @@ router.post("/", authenticate, upload.single("file"), async (req, res) => {
       .json({ message: "You are not allowed to add a program" });
   }
   const program = { ...req.body, trainer_id: req.user.id, file_url };
-  console.log(program);
   try {
     const result = await Program.create(program);
     res.status(201).json({ result, message: "Program added." });
