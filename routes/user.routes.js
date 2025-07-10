@@ -9,6 +9,7 @@ const checkUser = require("../utils/checkUser");
 const ProgramSales = require("../models/program-sales");
 const { fn, col } = require("sequelize");
 const Program = require("../models/programs");
+const upload = require("../utils/multer-config");
 
 const router = express.Router();
 
@@ -135,4 +136,26 @@ router.get("/earnings", authenticate, async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+//Update Profile Pic (PUT)
+router.put("/", authenticate, upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No image uploaded" });
+    }
+    const userId = req.user.id;
+    const imageURL = req.file.filename;
+    const [update] = await User.update(
+      { profile_pic: imageURL },
+      { where: { id: userId } }
+    );
+    if (!update) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "Profile updated", profile_pic: imageURL });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;
