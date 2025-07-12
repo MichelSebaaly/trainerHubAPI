@@ -98,6 +98,20 @@ router.post("/refresh", (req, res) => {
   });
 });
 
+//logout (POST)
+router.post("/logout", authenticate, (req, res) => {
+  try {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+    });
+    res.status(200).json({ message: "user logout" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 //Get all users (GET)
 router.get("/", authenticate, async (req, res) => {
   const { role } = req.user;
@@ -153,6 +167,21 @@ router.put("/", authenticate, upload.single("image"), async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json({ message: "Profile updated", profile_pic: imageURL });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+//Update profile information (PUT)
+router.put("/info", authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const info = req.body;
+    const [update] = await User.update(info, { where: userId });
+    if (!update) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "Profile updated", info });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
