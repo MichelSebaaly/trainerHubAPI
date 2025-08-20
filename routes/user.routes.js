@@ -69,8 +69,7 @@ router.post("/login", async (req, res) => {
       });
 
       res.send({
-        id: matchedUser.id,
-        role: matchedUser.role,
+        user: matchedUser,
         token: accessToken,
       });
     }
@@ -105,6 +104,7 @@ router.post("/logout", authenticate, (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "Strict",
+      path: "/api/user/refresh",
     });
     res.status(200).json({ message: "user logout" });
   } catch (err) {
@@ -177,7 +177,7 @@ router.put("/info", authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
     const info = req.body;
-    const [update] = await User.update(info, { where: userId });
+    const [update] = await User.update(info, { where: { id: userId } });
     if (!update) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -186,5 +186,37 @@ router.put("/info", authenticate, async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+//Change Password (PUT)
+router.put("/password", authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findByPk(userId);
+    const matchedPassword = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+    if (!matchedPassword) {
+      return res.status(400).json({ message: "Wrong password" });
+    } else {
+      const password = await bcrypt.hash(newPassword, 10);
+      const [update] = await User.update(
+        { password },
+        { where: { id: userId } }
+      );
+      if (!update) {
+        return res
+          .status(400)
+          .json({ message: "Something went wrong changing password" });
+      }
+      res.status(200).json({ message: "Changed password" });
+    }
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+//Get trainer Info (GET)
 
 module.exports = router;

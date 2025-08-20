@@ -33,7 +33,7 @@ const User = sequelize.define(
       allowNull: false,
     },
   },
-  { schema: "identity" }
+  { schema: "identity", tableName: "users" }
 );
 
 module.exports = User;

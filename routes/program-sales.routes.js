@@ -15,12 +15,12 @@ const calculateCommission = (program_price) => {
 router.post("/", authenticate, async (req, res) => {
   checkUser(req, res, "user", "Please sign up as user to purchase!");
   try {
-    const { program_id, price } = req.body;
+    const { id, price } = req.body;
     const user_id = req.user.id;
     const { platform_fee, trainer_earnings } = calculateCommission(price);
     const purchaseDetails = {
       user_id,
-      program_id,
+      program_id: id,
       platform_fee,
       trainer_earnings,
     };
@@ -45,7 +45,7 @@ router.get("/all", authenticate, async (req, res) => {
   }
 });
 
-//Get purchased programs by user (GET
+//Get purchased programs by user (GET)
 router.get("/", authenticate, async (req, res) => {
   checkUser(
     req,

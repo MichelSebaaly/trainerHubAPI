@@ -24,9 +24,20 @@ const Program = sequelize.define(
       type: DataTypes.STRING,
       unique: true,
     },
+    cover_photo: {
+      type: DataTypes.STRING,
+      unique: true,
+    },
+    equipment: {
+      type: DataTypes.STRING,
+    },
+    goal: {
+      type: DataTypes.STRING,
+    },
   },
   {
     schema: "content",
+    tableName: "programs",
   }
 );
 

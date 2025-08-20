@@ -1,0 +1,12 @@
+Schedule:
+- 5 days per week
+
+Workout:
+1. Easy run - 30 minutes
+2. Tempo run - 20 minutes at moderate pace
+3. Interval training - 6x400m sprints with 2 min rest
+4. Long slow distance run - 60 minutes
+5. Recovery jog - 20 minutes
+
+Notes:
+Warm-up before runs and cool down afterward.
