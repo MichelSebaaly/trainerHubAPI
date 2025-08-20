@@ -2,6 +2,7 @@ const express = require("express");
 const ProgramSales = require("../models/program-sales");
 const authenticate = require("../utils/authenticate");
 const checkUser = require("../utils/checkUser");
+const Program = require("../models/programs");
 const router = express.Router();
 
 const calculateCommission = (program_price) => {
@@ -24,6 +25,7 @@ router.post("/", authenticate, async (req, res) => {
       platform_fee,
       trainer_earnings,
     };
+
     const confirmPurchase = await ProgramSales.create(purchaseDetails);
     res.status(201).json({ message: "Program purchased", confirmPurchase });
   } catch (err) {
@@ -55,7 +57,7 @@ router.get("/", authenticate, async (req, res) => {
   );
   try {
     const purchasedPrograms = await ProgramSales.findAll({
-      where: (user_id = req.user.id),
+      where: { user_id: req.user.id },
     });
     if (!purchasedPrograms) {
       return res.status(201).json({ message: "You don't have any programs" });
