@@ -11,16 +11,9 @@ const router = express.Router();
 
 async function getExistingProgramAndBuyer(user_id, program_id) {
   const isBuyer = await ProgramSales.findOne({
-    where: {
-      user_id,
-      program_id,
-    },
-  });
-
-  const existingRating = await ProgramRatings.findOne({
     where: { user_id, program_id },
   });
-  return { isBuyer, existingRating };
+  return !!isBuyer;
 }
 
 //Get ratings and reviews (GET)
@@ -43,8 +36,7 @@ router.post("/:id", authenticate, async (req, res) => {
     const program_id = req.params.id;
     const user_id = req.user.id;
 
-    const { isBuyer } = await getExistingProgramAndBuyer(program_id, user_id);
-
+    const isBuyer = await getExistingProgramAndBuyer(user_id, program_id);
     if (!isBuyer) {
       return res
         .status(403)
@@ -64,7 +56,16 @@ router.post("/:id", authenticate, async (req, res) => {
         rating,
         review,
       });
-      res.status(200).json({ message: "Thank you for your review" });
+      const user = await ProgramRatings.findOne({
+        where: { user_id },
+        include: [{ model: User, attributes: ["name"] }],
+      });
+
+      res.status(200).json({
+        message: "Thank you for your review",
+        result,
+        username: user.user.name,
+      });
     }
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -99,7 +100,7 @@ router.post("/:id/rating", authenticate, async (req, res) => {
   const program_id = req.params.id;
   const { rating } = req.body;
 
-  const { isBuyer } = await getExistingProgramAndBuyer(program_id, user_id);
+  const isBuyer = await getExistingProgramAndBuyer(program_id, user_id);
 
   if (rating < 1 || rating > 5) {
     return res.status(400).json({ message: "Rating must be between 1 and 5" });
@@ -156,7 +157,7 @@ router.post("/:id/review", authenticate, async (req, res) => {
       return res.status(400).json({ message: "review cannot be empty" });
     }
 
-    const { isBuyer } = await getExistingProgramAndBuyer(program_id, user_id);
+    const isBuyer = await getExistingProgramAndBuyer(program_id, user_id);
 
     if (!isBuyer) {
       return res
