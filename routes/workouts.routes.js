@@ -20,14 +20,16 @@ router.get("/", authenticate, async (req, res) => {
 router.post("/", authenticate, async (req, res) => {
   try {
     const user_id = req.user.id;
-    const workout = { ...req.body, user_id };
+    const { title } = req.body;
+    console.log(title);
+    const workout = { user_id, title };
     const result = await Workout.create(workout);
     if (!result) {
       return res
         .status(400)
         .json({ message: "something went wrong creating workout" });
     }
-    res.status(200).json({ message: "Workout started" });
+    res.status(200).json({ message: "Workout started", workout: result });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -44,12 +46,34 @@ router.put("/:id", authenticate, async (req, res) => {
       { where: { id: workout_id } }
     );
     if (updated) {
-      res.status(200).json({ message: "Workout finished. Keep it up!" });
+      return res.status(200).json({
+        message: "Workout finished. Keep it up!",
+        workout_id,
+        duration,
+      });
     } else {
       res.status(404).json({ message: "Workout not found" });
     }
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+router.put("/:id/note", authenticate, async (req, res) => {
+  try {
+    const workout_id = req.params.id;
+    const { note } = req.body;
+    const [update] = Workout.update(
+      { notes: note },
+      { where: { id: workout_id } }
+    );
+    if (update) {
+      return res.status(200).json({ message: "Note added.", note });
+    } else {
+      res.status(404).json({ message: "Workout not found" });
+    }
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 

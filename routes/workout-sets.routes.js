@@ -2,10 +2,11 @@ const express = require("express");
 const WorkoutSets = require("../models/workout-sets");
 const authenticate = require("../utils/authenticate");
 const checkUser = require("../utils/checkUser");
+const verifyExerciseOwnership = require("../utils/verifyExerciseOwnership");
 const router = express.Router();
 
 //Get sets for a workout exercice return 10 each request (GET)
-router.get("/:id", authenticate, async (req, res) => {
+router.get("/:id", authenticate, verifyExerciseOwnership, async (req, res) => {
   const exercice_id = req.params.id;
   const limit = parseInt(req.query.limit) || 10;
   const offset = parseInt(req.query.offset) || 0;
@@ -14,9 +15,10 @@ router.get("/:id", authenticate, async (req, res) => {
       where: { exercice_id },
       limit,
       offset,
-      order: [["id", "ASC"]],
+      order: [["id", "DESC"]],
     });
-    res.send(sets);
+    const total = await WorkoutSets.count({ where: { exercice_id } });
+    res.send({ sets, total });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -43,14 +45,19 @@ router.post("/:id", authenticate, async (req, res) => {
   checkUser(req, res, "trainer,user", "You're not allowed to exercise");
   try {
     const exercice_id = req.params.id;
-    const { reps, weight, notes } = req.body;
-    if (!Number.isInteger(reps) || reps < 1) {
+    const { reps, weight, note } = req.body;
+    if (reps < 1) {
       return res
         .status(400)
         .json({ message: "Reps must be a positive integer" });
     }
-    await WorkoutSets.create({ exercice_id, reps, weight, notes });
-    res.status(200).json({ message: "recorded a set" });
+    const result = await WorkoutSets.create({
+      exercice_id,
+      reps,
+      weight,
+      notes: note,
+    });
+    res.status(200).json({ message: "recorded a set", set: result });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -61,8 +68,9 @@ router.put("/:id", authenticate, async (req, res) => {
   checkUser(req, res, "trainer,user", "You're not allowed to exercise");
   try {
     const id = req.params.id;
+    const { reps, weight, notes } = req.body;
     const [update] = await WorkoutSets.update(
-      { ...req.body },
+      { reps, weight, notes },
       { where: { id } }
     );
     if (!update) {
@@ -70,7 +78,7 @@ router.put("/:id", authenticate, async (req, res) => {
         .status(404)
         .json({ message: "Something went wrong updating set" });
     } else {
-      res.status(200).json({ message: "set updated" });
+      res.status(200).json({ message: "set updated", reps, weight, notes });
     }
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -78,15 +86,15 @@ router.put("/:id", authenticate, async (req, res) => {
 });
 
 //Remove a set (DELETE)
-router.delete("/", authenticate, async (req, res) => {
+router.delete("/:id", authenticate, async (req, res) => {
   checkUser(req, res, "trainer,user", "You're not allowed to exercise");
-  const setId = req.body;
+  const setId = req.params.id;
   try {
     const deleted = await WorkoutSets.destroy({ where: { id: setId } });
     if (!deleted) {
       return res.status(400).json({ message: "Set not found" });
     } else {
-      res.status(200).json({ message: "Set removed" });
+      res.status(200).json({ message: "Set removed", setId });
     }
   } catch (err) {
     res.status(400).json({ error: err.message });

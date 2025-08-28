@@ -4,18 +4,15 @@ const WorkoutExercises = require("../models/workout-exercices");
 const authenticate = require("../utils/authenticate");
 const checkUser = require("../utils/checkUser");
 const Workout = require("../models/workouts");
+const verifyWorkoutOwnership = require("../utils/verifyWorkoutOwnership");
 
 //Get exercices for a workout (GET)
-router.get("/:id", authenticate, async (req, res) => {
+router.get("/:id", authenticate, verifyWorkoutOwnership, async (req, res) => {
   checkUser(req, res, "trainer,user", "You're not allowed to exercise");
   try {
     const workout_id = req.params.id;
     const exercises = await WorkoutExercises.findAll({ where: { workout_id } });
-    if (!exercises) {
-      return res.status(404).json({ message: "Exercices Not Found" });
-    } else {
-      res.send(exercises);
-    }
+    res.send(exercises);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -26,7 +23,7 @@ router.post("/:id", authenticate, async (req, res) => {
   checkUser(req, res, "trainer,user", "You're not allowed to exercise");
   try {
     const workout_id = req.params.id;
-    const exercice_name = req.body;
+    const { exercice_name } = req.body;
     const workout = await Workout.findOne({ where: { id: workout_id } });
     if (!workout) {
       return res.status(404).json({ message: "Please create a workout first" });
@@ -35,7 +32,9 @@ router.post("/:id", authenticate, async (req, res) => {
         exercice_name,
         workout_id,
       });
-      res.status(200).json({ message: "Exercice added to the list" });
+      res
+        .status(200)
+        .json({ message: "Exercice added to the list", exercise: result });
     }
   } catch (err) {
     res.status(400).json({ error: err.message });
