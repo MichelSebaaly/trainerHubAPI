@@ -1,8 +1,12 @@
 const express = require("express");
+const path = require("path");
 const WorkoutSets = require("../models/workout-sets");
 const authenticate = require("../utils/authenticate");
 const checkUser = require("../utils/checkUser");
-const verifyExerciseOwnership = require("../utils/verifyExerciseOwnership");
+const verifyExerciseOwnership = require(path.join(
+  __dirname,
+  "../utils/verifyExerciseOwnership"
+));
 const router = express.Router();
 
 //Get sets for a workout exercice return 10 each request (GET)

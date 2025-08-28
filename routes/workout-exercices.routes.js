@@ -1,10 +1,15 @@
 const express = require("express");
-const router = express.Router();
+const path = require("path");
 const WorkoutExercises = require("../models/workout-exercices");
 const authenticate = require("../utils/authenticate");
 const checkUser = require("../utils/checkUser");
 const Workout = require("../models/workouts");
-const verifyWorkoutOwnership = require("../utils/verifyWorkoutOwnership");
+const verifyWorkoutOwnership = require(path.join(
+  __dirname,
+  "../utils/verifyWorkoutOwnership"
+));
+
+const router = express.Router();
 
 //Get exercices for a workout (GET)
 router.get("/:id", authenticate, verifyWorkoutOwnership, async (req, res) => {
