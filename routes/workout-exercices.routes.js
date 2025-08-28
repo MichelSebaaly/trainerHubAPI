@@ -6,7 +6,7 @@ const checkUser = require("../utils/checkUser");
 const Workout = require("../models/workouts");
 const verifyWorkoutOwnership = require(path.join(
   __dirname,
-  "../utils/verifyWorkoutOwnership"
+  "../utils/verifyWorkoutOwnerShip"
 ));
 
 const router = express.Router();
