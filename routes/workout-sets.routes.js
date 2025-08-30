@@ -19,9 +19,10 @@ router.get("/:id", authenticate, verifyExerciseOwnership, async (req, res) => {
       where: { exercice_id },
       limit,
       offset,
-      order: [["id", "DESC"]],
+      order: [["createdAt", "DESC"]],
     });
     const total = await WorkoutSets.count({ where: { exercice_id } });
+
     res.send({ sets, total });
   } catch (err) {
     res.status(400).json({ error: err.message });
