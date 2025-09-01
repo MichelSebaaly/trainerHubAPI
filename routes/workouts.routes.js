@@ -59,6 +59,7 @@ router.put("/:id", authenticate, async (req, res) => {
   }
 });
 
+//Update note (PUT)
 router.put("/:id/note", authenticate, async (req, res) => {
   try {
     const workout_id = req.params.id;
@@ -72,6 +73,35 @@ router.put("/:id/note", authenticate, async (req, res) => {
     } else {
       res.status(404).json({ message: "Workout not found" });
     }
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+//Edit Workout title (PUT)
+router.put("/:id/title", authenticate, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { title } = req.body;
+    const [update] = await Workout.update({ title }, { where: { id } });
+    if (!update) {
+      return res.status(400).json({ message: "Title not updated" });
+    }
+    res.status(201).json({ message: "Title updated", update: { id, title } });
+  } catch (err) {
+    res.json(400).message({ error: err.message });
+  }
+});
+
+//Delete workout (delete)
+router.delete("/:id", authenticate, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const isDeleted = await Workout.destroy({ where: { id } });
+    if (!isDeleted) {
+      return res.status(400).json({ message: "Workout not deleted" });
+    }
+    res.status(200).json({ message: "Workout deleted", id });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

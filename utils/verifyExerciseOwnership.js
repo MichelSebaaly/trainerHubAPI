@@ -3,27 +3,26 @@ const sequelize = require("../db");
 const verifyExerciseOwnership = async (req, res, next) => {
   try {
     const user_id = req.user.id;
-    const setId = req.params.id;
+    const exerciseId = req.params.id;
 
-    const userIds = await sequelize.query(
+    const [exercise] = await sequelize.query(
       `
-      SELECT w.user_id 
-      FROM content.workouts w 
+      SELECT w.user_id
+      FROM content.workouts w
       JOIN content.workout_exercices e ON w.id = e.workout_id
-      JOIN content.workout_sets s ON e.id = s.exercice_id
-      WHERE s.id = ?
+      WHERE e.id = ?
       `,
       {
-        replacements: [setId],
+        replacements: [exerciseId],
         type: sequelize.QueryTypes.SELECT,
       }
     );
 
-    if (userIds.length === 0) {
-      return res.status(404).json({ message: "Set not found" });
+    if (!exercise) {
+      return res.status(404).json({ message: "Exercise not found" });
     }
 
-    if (userIds[0].user_id !== user_id) {
+    if (exercise.user_id !== user_id) {
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
