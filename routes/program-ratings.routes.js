@@ -88,7 +88,10 @@ router.put("/:id", authenticate, async (req, res) => {
     if (!update) {
       return res.status(400).json({ message: "Failed to update review" });
     }
-    res.status(200).json({ message: "review updated" });
+    res.status(200).json({
+      message: "review updated",
+      update: { user_id, rating, review },
+    });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -255,7 +258,7 @@ router.delete("/:id", authenticate, async (req, res) => {
 router.get("/reviews/:id", async (req, res) => {
   try {
     const programReviews = await ProgramRatings.findAll({
-      attributes: ["review"],
+      attributes: ["user_id", "review"],
       where: {
         program_id: req.params.id,
         review: { [require("sequelize").Op.ne]: null },
@@ -276,7 +279,7 @@ router.get("/reviews/:id", async (req, res) => {
 router.get("/reviews/:id/all", async (req, res) => {
   try {
     const programReviews = await ProgramRatings.findAll({
-      attributes: ["review"],
+      attributes: ["user_id", "review"],
       where: {
         program_id: req.params.id,
         review: { [require("sequelize").Op.ne]: null },
